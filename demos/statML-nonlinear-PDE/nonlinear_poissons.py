@@ -1,6 +1,10 @@
 import numpy as np, matplotlib.pyplot as plt
 import time
-import sympy as sym
+import sympy as sym, os
+
+results_folder = os.path.join(os.getcwd(), "results")
+if not os.path.exists(results_folder):
+    os.mkdir(results_folder)
 
 # CONFIGURATION SETTINGS
 # --------------------------------------------------------
@@ -64,7 +68,7 @@ plt.figure("collocationPts")
 plt.plot(xB[:,0], xB[:,1], "bo", label="bndry")
 plt.plot(xI[:,0], xI[:,1], "ko", label="inner")
 plt.legend()
-plt.savefig("init_colloc_pts.png")
+plt.savefig("results/init_colloc_pts.png")
 plt.close("collocationPts")
 
 # BUILD THE COVARIANCE / KERNEL MATRICES
@@ -218,7 +222,7 @@ plt.figure("nonlinear-poissons")
 plt.scatter(X[:,0], X[:,1], c=u)
 ax = plt.gca()
 ax.set_aspect('equal', adjustable='box')
-plt.savefig("nonlinear-poisson.png", dpi=300)
+plt.savefig("results/nonlinear-poisson.png", dpi=300)
 plt.close("nonlinear-poissons")
 
 # compute the solution residuals and plot them
@@ -232,7 +236,7 @@ plt.figure("nonlinear-poissons-error")
 plt.scatter(X[:,0], X[:,1], c=uresid)
 ax = plt.gca()
 ax.set_aspect('equal', adjustable='box')
-plt.savefig("nonlinear-poisson-error.png", dpi=300)
+plt.savefig("results/nonlinear-poisson-error.png", dpi=300)
 plt.close("nonlinear-poissons-error")
 
 # INTERPOLATE 2D MESH 
@@ -264,7 +268,7 @@ uplot = np.reshape(ustar[:,0], (ngrid,ngrid))
 # plot the interpolated solution
 plt.figure("u-2d-mesh")
 fig, ax = plt.subplots(1, 1)
-ax.contourf(X1plot, X2plot, uplot)
+ax.contourf(X1plot, X2plot, uplot, levels=50)
 plt.scatter(X[:,0], X[:,1], "kx")
 ax = plt.gca()
 ax.set_aspect('equal', adjustable='box')
