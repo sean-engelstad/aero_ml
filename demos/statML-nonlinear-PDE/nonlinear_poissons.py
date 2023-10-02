@@ -81,7 +81,7 @@ def kernel(xm, xl, sigma=1, order=0):
         return np.exp(-norm_sq/2.0/sigma**2)
     elif order == 1: # first Laplacian
         K = kernel(xm,xl,sigma=sigma, order=0)
-        return -1 *  K * (norm_sq - D * sigma**2) / sigma**4
+        return K * (norm_sq - D * sigma**2) / sigma**4
     elif order == 2:
         K = kernel(xm,xl,sigma=sigma, order=0)
         return K * (norm_sq**2 - 2 * (2 + D) * norm_sq * sigma**2 + D * (2 + D) * sigma**4) / sigma**8
@@ -269,9 +269,8 @@ uplot = np.reshape(ustar[:,0], (ngrid,ngrid))
 plt.figure("u-2d-mesh")
 fig, ax = plt.subplots(1, 1)
 ax.contourf(X1plot, X2plot, uplot, levels=50)
-plt.scatter(X[:,0], X[:,1], "kx")
+plt.plot(X[:,0], X[:,1], "kx", markersize=3)
 ax = plt.gca()
 ax.set_aspect('equal', adjustable='box')
-fig.colorbar()
 plt.savefig("results/nonlinear-poissons-2dmesh.png")
 plt.close("u-2d-mesh")
