@@ -8,7 +8,7 @@ nB = 300 # num boundary points
 nI = 1000 # num interior points in Omega = (0,1)^2
 
 G_sigma = 0.2 # kernel hyperparameter
-n_newton = 50 # num Newton iterations
+n_newton = 5 # num Newton iterations
 eta = 1e-5
 
 # ----------------------------------------------------------
@@ -77,7 +77,7 @@ def kernel(xm, xl, sigma=1, order=0):
         return np.exp(-norm_sq/2.0/sigma**2)
     elif order == 1: # first Laplacian
         K = kernel(xm,xl,sigma=sigma, order=0)
-        return K * (norm_sq - D * sigma**2) / sigma**4
+        return -1 *  K * (norm_sq - D * sigma**2) / sigma**4
     elif order == 2:
         K = kernel(xm,xl,sigma=sigma, order=0)
         return K * (norm_sq**2 - 2 * (2 + D) * norm_sq * sigma**2 + D * (2 + D) * sigma**4) / sigma**8
@@ -234,3 +234,40 @@ ax = plt.gca()
 ax.set_aspect('equal', adjustable='box')
 plt.savefig("nonlinear-poisson-error.png", dpi=300)
 plt.close("nonlinear-poissons-error")
+
+# INTERPOLATE 2D MESH 
+# ----------------------------------------------------------------------
+# make a 2D mesh with meshgrid
+ngrid = 30
+ngrid_sq = ngrid**2
+sigma_n = 1e-4
+x1vec = np.linspace(0,1,30)
+x2vec = x1vec.copy()
+X1, X2 = np.meshgrid(x1vec, x2vec)
+# goes by row 1, row 2, etc. after flattened
+X1flat = np.reshape(X1, newshape=(ngrid_sq,1))
+X2flat = np.reshape(X2, newshape=(ngrid_sq,1))
+Xstar = np.concatenate([X1flat, X2flat], axis=1)
+#print(f"X1 = {X1[:5,:5]} shape = {X1.shape}, X1flat = {X1flat[:5]}, shape = {X1flat.shape}")
+print("Building kernels K(X*,X) and K(X,X) for interpolating 2d mesh..")
+Kxstar_x = np.array([[kernel(Xstar[i,:], X[j,:], sigma=G_sigma) for j in range(N)] for i in range(ngrid_sq)])
+Kxx = np.array([[kernel(X[i,:], X[j,:], sigma=G_sigma) for j in range(N)] for i in range(N)])
+print("Done building kernels")
+print("Solving kernel inverse problem..")
+ucol = np.reshape(u, newshape=(N,1))
+ustar = Kxstar_x @ np.linalg.solve(Kxx+sigma_n**2 * np.eye(N), ucol)
+print("Done solving kernel inverse proble, now plotting..")
+X1plot = np.reshape(Xstar[:,0], (ngrid,ngrid))
+X2plot = np.reshape(Xstar[:,1], (ngrid,ngrid))
+uplot = np.reshape(ustar[:,0], (ngrid,ngrid))
+
+# plot the interpolated solution
+plt.figure("u-2d-mesh")
+fig, ax = plt.subplots(1, 1)
+ax.contourf(X1plot, X2plot, uplot)
+plt.scatter(X[:,0], X[:,1], "kx")
+ax = plt.gca()
+ax.set_aspect('equal', adjustable='box')
+fig.colorbar()
+plt.savefig("results/nonlinear-poissons-2dmesh.png")
+plt.close("u-2d-mesh")
